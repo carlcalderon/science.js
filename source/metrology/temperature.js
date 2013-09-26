@@ -27,7 +27,7 @@ science.temperature = science.temperature || {
                 switch (to) {
                     case this.FAHRENHEIT: return value * 1.8 + 32;
                     case this.KELVIN: return value + 273.15;
-                    case this.RANKINE: return value * 1.8 + 32 + 459.67;
+                    case this.RANKINE: return value * 1.8 + 491.67;
                     case this.REAUMUR: return value * 0.8;
                     default: throw "Unkown temperature scale.";
                 }
