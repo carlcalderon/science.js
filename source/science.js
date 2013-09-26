@@ -1,3 +1,3 @@
 var science = science || {
-    revision: 0
+    version: "0.0.1"
 };
