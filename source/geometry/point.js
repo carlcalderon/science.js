@@ -17,17 +17,17 @@ science.point = science.point || {
      * specified `polygon`.
      * @param  {Number}  x       X-axis
      * @param  {Number}  y       Y-axis
-     * @param  {Array}   polygon Array of coordinates as [x1, y1, x2, y2, x3...]
+     * @param  {Array}   polygon Array of coordinates as [{x, y}, {x, y}]
      * @return {Boolean}         Inside polygon or not.
      */
     isInPolygon: function (x, y, polygon) {
 
-        var total = 0, i = polygon.length - 2;
-        for (;i>=0;i-=2) {
-            total += this.angleBetweenPoints(x, y, polygon[i], polygon[i+1]);
+        var i, j, len = polygon.length;
+        var inside = false;
+        for (i = 0, j = len - 1; i < len; j = i++) {
+            if(((polygon[i].y > y) != (polygon[j].y > y)) && (x < (polygon[j].x-polygon[i].x) * (y-polygon[i].y) / (polygon[j].y-polygon[i].y) + polygon[i].x) ) inside = !inside;
         }
-        return Math.abs(total) <= 1;
-
+        return inside;
     }
 
 };

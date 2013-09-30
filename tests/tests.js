@@ -20,16 +20,22 @@ test("science.temperature", function (assert) {
 });
 
 test("science.point", function (assert) {
-  equal(science.point.isInPolygon(0.5, 0.5, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
-  equal(science.point.isInPolygon(0.9, 0.1, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
-  equal(science.point.isInPolygon(0.1, 0.9, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
-  equal(science.point.isInPolygon(0.9, 0.9, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
-  equal(science.point.isInPolygon(0.1, 0.1, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
-  equal(science.point.isInPolygon(2, 2, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(1.1, 0, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(0.1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(-0.1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(1, 1.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
-  equal(science.point.isInPolygon(0.1, 1.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  var rect = [
+    {x: 0, y: 0},
+    {x: 1, y: 0},
+    {x: 1, y: 1},
+    {x: 0, y: 1}
+  ];
+  equal(science.point.isInPolygon(0.5, 0.5, rect), true, "Point inside Polygon: true (0.5, 0.5, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.9, 0.1, rect), true, "Point inside Polygon: true (0.9, 0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.1, 0.9, rect), true, "Point inside Polygon: true (0.1, 0.9, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.9, 0.9, rect), true, "Point inside Polygon: true (0.9, 0.9, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.1, 0.1, rect), true, "Point inside Polygon: true (0.1, 0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(2, 2, rect), false, "Point inside Polygon: false (2, 2, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(1.1, 0, rect), false, "Point inside Polygon: false (1.1, 0, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.1, -0.1, rect), false, "Point inside Polygon: false (0.1, -0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(-0.1, -0.1, rect), false, "Point inside Polygon: false (-0.1, -0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(1, -0.1, rect), false, "Point inside Polygon: false (1, -0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(1, 1.1, rect), false, "Point inside Polygon: false (1, 1.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.isInPolygon(0.1, 1.1, rect), false, "Point inside Polygon: false (0.1, 1.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
 });
