@@ -18,3 +18,18 @@ test("science.temperature", function (assert) {
   assert.close(science.temperature.convert(20, science.temperature.CELCIUS, science.temperature.RANKINE), 527.67, 0.000000001, "Celcius to Rankine");
   assert.close(science.temperature.convert(20, science.temperature.CELCIUS, science.temperature.REAUMUR), 16, 0.000000001, "Celcius to Réaumur");
 });
+
+test("science.point", function (assert) {
+  equal(science.point.isInPolygon(0.5, 0.5, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
+  equal(science.point.isInPolygon(0.9, 0.1, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
+  equal(science.point.isInPolygon(0.1, 0.9, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
+  equal(science.point.isInPolygon(0.9, 0.9, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
+  equal(science.point.isInPolygon(0.1, 0.1, [0, 0, 1, 0, 1, 1, 0, 1]), true, "Point inside Polygon: true");
+  equal(science.point.isInPolygon(2, 2, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(1.1, 0, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(0.1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(-0.1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(1, -0.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(1, 1.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+  equal(science.point.isInPolygon(0.1, 1.1, [0, 0, 1, 0, 1, 1, 0, 1]), false, "Point inside Polygon: false");
+});

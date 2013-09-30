@@ -19,7 +19,8 @@
                         "science.js",
                         "horology",
                         "astronomy",
-                        "metrology"
+                        "metrology",
+                        "geometry"
                     ],
                     "output": "science.js"
                 }

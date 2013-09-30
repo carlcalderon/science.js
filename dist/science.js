@@ -80,58 +80,110 @@ science.julian = science.julian || {
     }
 
 };
-science.sun = science.sun || (function () {
+science.sidereal = science.sidereal || {
 
-    function getJulianDate(date) {
-        var year    = date.getUTCFullYear();
-        var month   = date.getUTCMonth() + 1;
-        var day     = date.getUTCDate();
-        var hour    = date.getUTCHours();
-        var minutes = date.getUTCMinutes();
-        var seconds = date.getUTCSeconds();
+    getMeanSiderealTime: function (date, long) {
 
-        if(year < 1000) {
-            year += 1900;
-        }
-
-        var uniTime = hour + (minutes / 60) + (seconds / 3600);
-        var sign    = (100 * year + month - 190002.5 >= 0) ? 1 : -1;
-        var part1   = 367 * year;
-        var part2   = parseInt((7 * (year + parseInt((month + 9) / 12, 10))) / 4, 10);
-        var part3   = day + parseInt((275 * month) / 9, 10);
-        var part4   = 1721013.5 + (uniTime / 24);
-        var part5   = 0.5 * sign;
-
-        return part1 - part2 + part3 + part4 - part5 + 0.5;
-    }
-
-    function getMeanSiderealTime(date, long) {
-
-        var julianDate = getJulianDate(date);
+        var julianTime = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_TIME);
 
         // Time since J2000.0
-        var normalizedJulianDate = julianDate - 2451545.0;
-        var julianTime = normalizedJulianDate / 36525.0;
-        var GMST = 280.46061837 + 360.98564736629 * normalizedJulianDate;
+        var normalizedJulianTime = julianTime - 2451545.0;
+        julianTime = normalizedJulianTime / 36525.0;
+        var GMST = 280.46061837 + 360.98564736629 * normalizedJulianTime;
         var meanSiderealTime = GMST + 0.000387933 * Math.pow(julianTime, 2) - Math.pow(julianTime, 3) / 38710000 + long;
         meanSiderealTime %= 360;
         return meanSiderealTime;
     }
 
+};
+science.earth = science.earth || (function () {
+
     return {
+
+        //The primary orbital elements are here denoted as:
+
+        // longitude of the ascending node
+        N: -11.26064,
+
+        // inclination to the ecliptic (plane of the Earth's orbit)
+        i: 0.000,
+
+        // argument of perihelion
+        w: 114.20783,
+
+        // semi-major axis, or mean distance from Sun
+        a: 149.60,
+
+        // eccentricity (0=circle, 0-1=ellipse, 1=parabola)
+        e: 0.0167,
+
+        // mean anomaly (0 at perihelion; increases uniformly with time)
+        M: 265.8,
+
+        // Related orbital elements are:
+        //
+        // longitude of perihelion
+        w1: this.N + this.w,
+
+        // mean longitude
+        L: this.M + this.w1,
+
+        // perihelion distance
+        q: this.a * (1 - this.e),
+
+        // aphelion distance
+        Q: this.a * (1 + this.e),
+
+        // orbital period (years if a is in AU, astronomical units)
+        P: Math.pow(this.a, 1.5),
+
+        // time of perihelion
+        //T: Epoch_of_M - (M(deg)/360_deg) / P
+
+        //true anomaly (angle between position and perihelion)
+        v: this.M + 180 / Math.PI * ((2* this.e - Math.pow(this.e,3) / 4) * Math.sin(this.M) + 5/4 * Math.pow(this.e, 2) * Math.sin(2 * this.M) + 13/12 * Math.pow(this.e, 3) * Math.sin(3 * this.M)),
+
+        //eccentric anomaly
+        E: 0.0167,
+
+
+        getTilt: function(julianTime) {
+            return 23.4393 - 0.0000003563 * julianTime;
+        }
+
+    };
+
+}());
+science.sun = science.sun || (function () {
+
+    return {
+
+        // longitude of the ascending node
+        N: 0.0,
+
+        // inclination to the ecliptic
+        i: 0.0,
+
+        // argument of perihelion
+        w: function (julianTime) { return 282.9404 + 0.0000470935 * julianTime; },
+
+        // semi-major axis
+        a: 1.000000,
+
+        // eccentricity (0=circle, 0-1=ellipse, 1=parabola)
+        e: function (julianTime) { return 0.016709 - 0.000000001151 * julianTime; },
+
+        // mean anomaly (0 at perihelion; increases uniformly with time)
+        M: function (julianTime) { return 356.0470 + 0.9856002585 * julianTime; },
+
         coordinateToSunPosition: function(date, lat, long) {
 
-            var j = this.getJulianDate(date) - 2451545;
+            var j = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_DATE_TIME) - 2451545;
             var DEG_TO_RAD = Math.PI / 180;
             var RAD_TO_DEG = 180 / Math.PI;
 
-            var meanLongitude = 280.461 + 0.9856474 * j;
-            while(meanLongitude > 360) meanLongitude -= 360;
-            while(meanLongitude < 0) meanLongitude += 360;
-
-            var meanAnomaly = 357.528 + 0.9856003 * j;
-            while(meanAnomaly > 360) meanAnomaly -= 360;
-            while(meanAnomaly < 0) meanAnomaly += 360;
+            var meanLongitude = (280.461 + 0.9856474 * j) % 360;
+            var meanAnomaly = (357.528 + 0.9856003 * j) % 360;
 
             var eclipticLongitude = (meanLongitude + 1.915 * Math.sin(meanAnomaly * DEG_TO_RAD) + 0.020 * Math.sin(2 * (meanAnomaly * DEG_TO_RAD))) % 360;
             var obliquityOfEcliptic = 23.439 - 0.0000004 * j;
@@ -148,7 +200,7 @@ science.sun = science.sun || (function () {
 
             rightAscension = rightAscension / DEG_TO_RAD;
 
-            var ha = getMeanSiderealTime(date, long) - rightAscension;
+            var ha = science.sidereal.getMeanSiderealTime(date, long) - rightAscension;
             if(ha < 0) ha = ha + 360;
 
             ha = ha * DEG_TO_RAD;
@@ -167,7 +219,7 @@ science.sun = science.sun || (function () {
 
             return {azimuth:horizontalAzimuth, altitude:horizontalAltitude};
         }
-    }
+    };
 
 }());
 science.temperature = science.temperature || {
@@ -199,7 +251,7 @@ science.temperature = science.temperature || {
                 switch (to) {
                     case this.FAHRENHEIT: return value * 1.8 + 32;
                     case this.KELVIN: return value + 273.15;
-                    case this.RANKINE: return value * 1.8 + 32 + 459.67;
+                    case this.RANKINE: return value * 1.8 + 491.67;
                     case this.REAUMUR: return value * 0.8;
                     default: throw "Unkown temperature scale.";
                 }
@@ -292,6 +344,39 @@ science.wind = science.wind || {
             default: throw "Unkown temperature scale.";
         }
         return null;
+    }
+
+};
+science.point = science.point || {
+
+    /**
+     * Returns the angle in radians between two points.
+     * @param  {Number} x1 Point 1 X-axis
+     * @param  {Number} y1 Point 1 Y-axis
+     * @param  {Number} x2 Point 2 X-axis
+     * @param  {Number} y2 Point 2 Y-axis
+     * @return {Number}    Angle in radians
+     */
+    angleBetweenPoints: function (x1, y1, x2, y2) {
+        return Math.atan2(y2 - y1, x2 - x1);
+    },
+
+    /**
+     * Returns true if the `x`, `y` coordinate is within the
+     * specified `polygon`.
+     * @param  {Number}  x       X-axis
+     * @param  {Number}  y       Y-axis
+     * @param  {Array}   polygon Array of coordinates as [x1, y1, x2, y2, x3...]
+     * @return {Boolean}         Inside polygon or not.
+     */
+    isInPolygon: function (x, y, polygon) {
+
+        var total = 0, i = polygon.length - 2;
+        for (;i>=0;i-=2) {
+            total += this.angleBetweenPoints(x, y, polygon[i], polygon[i+1]);
+        }
+        return Math.abs(total) <= 1;
+
     }
 
 };
