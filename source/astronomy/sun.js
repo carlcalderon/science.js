@@ -1,19 +1,25 @@
 science.sun = science.sun || (function () {
 
-    function getMeanSiderealTime(date, long) {
-
-        var julianDate = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_DATE_TIME);
-
-        // Time since J2000.0
-        var normalizedJulianDate = julianDate - 2451545.0;
-        var julianTime = normalizedJulianDate / 36525.0;
-        var GMST = 280.46061837 + 360.98564736629 * normalizedJulianDate;
-        var meanSiderealTime = GMST + 0.000387933 * Math.pow(julianTime, 2) - Math.pow(julianTime, 3) / 38710000 + long;
-        meanSiderealTime %= 360;
-        return meanSiderealTime;
-    }
-
     return {
+
+        // longitude of the ascending node
+        N: 0.0,
+
+        // inclination to the ecliptic
+        i: 0.0,
+
+        // argument of perihelion
+        w: function (julianTime) { return 282.9404 + 0.0000470935 * julianTime; },
+
+        // semi-major axis
+        a: 1.000000,
+
+        // eccentricity (0=circle, 0-1=ellipse, 1=parabola)
+        e: function (julianTime) { return 0.016709 - 0.000000001151 * julianTime; },
+
+        // mean anomaly (0 at perihelion; increases uniformly with time)
+        M: function (julianTime) { return 356.0470 + 0.9856002585 * julianTime; },
+
         coordinateToSunPosition: function(date, lat, long) {
 
             var j = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_DATE_TIME) - 2451545;
@@ -21,7 +27,7 @@ science.sun = science.sun || (function () {
             var RAD_TO_DEG = 180 / Math.PI;
 
             var meanLongitude = (280.461 + 0.9856474 * j) % 360;
-            var meanAnomaly = (357.528 + 0.9856003 * j) % 360
+            var meanAnomaly = (357.528 + 0.9856003 * j) % 360;
 
             var eclipticLongitude = (meanLongitude + 1.915 * Math.sin(meanAnomaly * DEG_TO_RAD) + 0.020 * Math.sin(2 * (meanAnomaly * DEG_TO_RAD))) % 360;
             var obliquityOfEcliptic = 23.439 - 0.0000004 * j;
@@ -38,7 +44,7 @@ science.sun = science.sun || (function () {
 
             rightAscension = rightAscension / DEG_TO_RAD;
 
-            var ha = getMeanSiderealTime(date, long) - rightAscension;
+            var ha = science.sidereal.getMeanSiderealTime(date, long) - rightAscension;
             if(ha < 0) ha = ha + 360;
 
             ha = ha * DEG_TO_RAD;
@@ -57,6 +63,6 @@ science.sun = science.sun || (function () {
 
             return {azimuth:horizontalAzimuth, altitude:horizontalAltitude};
         }
-    }
+    };
 
 }());
