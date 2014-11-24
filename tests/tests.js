@@ -38,4 +38,21 @@ test("science.point", function (assert) {
   equal(science.point.isInPolygon(1, -0.1, rect), false, "Point inside Polygon: false (1, -0.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
   equal(science.point.isInPolygon(1, 1.1, rect), false, "Point inside Polygon: false (1, 1.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
   equal(science.point.isInPolygon(0.1, 1.1, rect), false, "Point inside Polygon: false (0.1, 1.1, [{x: 0, y: 0},{x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1}])");
+  equal(science.point.distance(2.3, 4.5, 5.6, 7.8),  4.666904755831213, "Distance between two points.");
+  equal(science.point.distanceToLine(2.3, 4.5, 5.6, 7.8, 9.1, 1.2),  4.461483615445308, "Distance between two points.");
+});
+
+test("science.math", function (assert) {
+  equal(science.math.within(0, -1, 1), true, "0 within -1 to 1");
+  equal(science.math.within(-1, -1, 1), true, "-1 within -1 to 1");
+  equal(science.math.within(-1.000001, -1, 1), false, "-1.000001 not within -1 to 1");
+  equal(science.math.interpolate(0.3, 0, 100), 30, "30% of 0 to 100 is 30");
+  equal(science.math.interpolate(0.3, -10, 100), 33, "30% of 0 to 100 is 33");
+  equal(science.math.fits(0.3, 1), true, "0.3 fits within 1");
+  equal(science.math.fits(0, 1), true, "0 fits within 1");
+  equal(science.math.fits(1, -1), true, "1 fits within -1");
+  equal(science.math.fits(0.0001, 0), false, "0.0001 does not fit within 0");
+  equal(science.math.inRange(0.02, 0.1, 0.1), false, "0.02 is not in 10% range of 0.1");
+  equal(science.math.inRange(1, 2, 0.5), true, "1 is in 50% range of 2");
+  equal(science.math.inRange(2.9, 3, 0.1), true, "2.9 is in 10% range of 3");
 });

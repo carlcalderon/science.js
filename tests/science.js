@@ -1,98 +1,82 @@
 var science = science || {
     version: "0.0.1"
 };
-science.gregorian = science.gregorian || {
+science.point = science.point || {
 
-    isLeapYear: function (year) {
-        return ((year % 4) === 0) && (!(((year % 100) === 0) && ((year % 400) !== 0)));
-    }
+    /**
+     * Returns the angle in radians between two points.
+     * @param  {Number} x1 Point 1 X-axis
+     * @param  {Number} y1 Point 1 Y-axis
+     * @param  {Number} x2 Point 2 X-axis
+     * @param  {Number} y2 Point 2 Y-axis
+     * @return {Number}    Angle in radians
+     */
+    angleBetweenPoints: function (x1, y1, x2, y2) {
+        return Math.atan2(y2 - y1, x2 - x1);
+    },
 
-};
-science.julian = science.julian || {
+    /**
+     * Returns true if the `x`, `y` coordinate is within the
+     * specified `polygon`.
+     * @param  {Number}  x       X-axis
+     * @param  {Number}  y       Y-axis
+     * @param  {Array}   polygon Array of coordinates as [{x, y}, {x, y}]
+     * @return {Boolean}         Inside polygon or not.
+     */
+    isInPolygon: function (x, y, polygon) {
 
-    JULIAN_DAY: "jd",
-    JULIAN_TIME: "jt",
-    MODIFIED_JULIAN_DAY: "mjd",
-    JULIAN_CALENDAR_DATE: "jcd",
-
-    GREGORIAN: "gregorian",
-    UNIX: "unix",
-
-    convert: function (date, from, to) {
-
-        if (from === to) return date;
-
-        function floor(value) {
-            return parseInt(value, 10);
+        var i, j, len = polygon.length;
+        var inside = false;
+        for (i = 0, j = len - 1; i < len; j = i++) {
+            if(((polygon[i].y > y) != (polygon[j].y > y)) && (x < (polygon[j].x-polygon[i].x) * (y-polygon[i].y) / (polygon[j].y-polygon[i].y) + polygon[i].x) ) inside = !inside;
         }
-        switch (from) {
-            case this.GREGORIAN:
-                var year    = date.getUTCFullYear();
-                var month   = date.getUTCMonth() + 1;
-                var day     = date.getUTCDate();
-                var hours   = date.getUTCHours();
-                var minutes = date.getUTCMinutes();
-                var seconds = date.getUTCSeconds();
-                switch (to) {
-                    case this.JULIAN_DAY:
-                        return (1721425.5) +
-                               (365 * (year - 1)) +
-                               (floor((year - 1) / 4)) +
-                               (-floor((year - 1) / 100)) +
-                               (floor((year - 1) / 400)) +
-                               (floor((367 * month - 362) / 12)) +
-                               ((month < 3) ? 0 : (science.gregorian.isLeapYear(year) ? -1 : -2)) +
-                               day;
-                    case this.JULIAN_TIME:
-                        if(year < 1000) {
-                            year += 1900;
-                        }
-                        var uniTime = hours + (minutes / 60) + (seconds / 3600);
-                        var sign    = (100 * year + month - 190002.5 >= 0) ? 1 : -1;
-                        var part1   = 367 * year;
-                        var part2   = floor((7 * (year + floor((month + 9) / 12))) / 4);
-                        var part3   = day + floor((275 * month) / 9);
-                        var part4   = 1721013.5 + (uniTime / 24);
-                        var part5   = 0.5 * sign;
+        return inside;
+    },
 
-                        return part1 - part2 + part3 + part4 - part5 + 0.5;
-                    case this.JULIAN_CALENDAR_DATE:
-                        var a, b, c, e;
-                        var jd = this.convert(date, this.GREGORIAN, this.JULIAN_DAY) + 0.5;
-                        a = floor(jd) + 1524;
-                        b = floor((a - 122.1) / 365.25);
-                        c = floor(365.25 * b);
-                        e = floor((a - c) / 30.6001);
-                        month = floor((e < 14) ? (e - 1) : (e - 13));
-                        year = floor((month > 2) ? (b - 4716) : (b - 4715));
-                        day = a - c - floor(30.6001 * e);
-                        if (year < 1) {
-                            year--;
-                        }
-                        return [year, month, day];
-                    case this.MODIFIED_JULIAN_DAY:
-                        return this.convert(date, this.GREGORIAN, this.JULIAN_DAY) - 2400000.5;
-                }
-                break;
-            case this.UNIX:
-                return date / 86400 + 2440587.5;
+    /**
+     * Returns the distance between to points.
+     * @param  {Number} x1  Point 1 X-axis
+     * @param  {Number} y1  Point 1 Y-axis
+     * @param  {Number} x2  Point 2 X-axis
+     * @param  {Number} y2  Point 2 Y-axis
+     * @return {Number}     Distance
+     */
+    distance: function (x1, y1, x2, y2) {
+        return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+    },
+
+    /**
+     * Returns the shortest distance to a line from a point.
+     * @param  {[type]} x    Point X-axis
+     * @param  {[type]} y    Point X-axis
+     * @param  {[type]} lx1  Line Point 1 X-axis
+     * @param  {[type]} ly2  Line Point 1 Y-axis
+     * @param  {[type]} lx2  Line Point 2 X-axis
+     * @param  {[type]} ly2  Line Point 2 Y-axis
+     * @return {[type]}      Distance
+     */
+    distanceToLine: function (x, y, lx1, ly1, lx2, ly2) {
+        var A = x - lx1;
+        var B = y - ly1;
+        var C = lx2 - lx1;
+        var D = ly2 - ly1;
+        var dot = A * C + B * D;
+        var len_sq = C * C + D * D;
+        var param = dot / len_sq;
+        var xx, yy;
+        if (param < 0 || (lx1 == lx2 && ly1 == ly2)) {
+            xx = lx1;
+            yy = ly1;
         }
-    }
-
-};
-science.sidereal = science.sidereal || {
-
-    getMeanSiderealTime: function (date, long) {
-
-        var julianTime = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_TIME);
-
-        // Time since J2000.0
-        var normalizedJulianTime = julianTime - 2451545.0;
-        julianTime = normalizedJulianTime / 36525.0;
-        var GMST = 280.46061837 + 360.98564736629 * normalizedJulianTime;
-        var meanSiderealTime = GMST + 0.000387933 * Math.pow(julianTime, 2) - Math.pow(julianTime, 3) / 38710000 + long;
-        meanSiderealTime %= 360;
-        return meanSiderealTime;
+        else if (param > 1) {
+            xx = lx2;
+            yy = ly2;
+        }
+        else {
+            xx = lx1 + param * C;
+            yy = ly1 + param * D;
+        }
+        return this.distance(x, y, xx, yy);
     }
 
 };
@@ -222,6 +206,135 @@ science.sun = science.sun || (function () {
     };
 
 }());
+science.gregorian = science.gregorian || {
+
+    isLeapYear: function (year) {
+        return ((year % 4) === 0) && (!(((year % 100) === 0) && ((year % 400) !== 0)));
+    }
+
+};
+science.julian = science.julian || {
+
+    JULIAN_DAY: "jd",
+    JULIAN_TIME: "jt",
+    MODIFIED_JULIAN_DAY: "mjd",
+    JULIAN_CALENDAR_DATE: "jcd",
+
+    GREGORIAN: "gregorian",
+    UNIX: "unix",
+
+    convert: function (date, from, to) {
+
+        if (from === to) return date;
+
+        function floor(value) {
+            return parseInt(value, 10);
+        }
+        switch (from) {
+            case this.GREGORIAN:
+                var year    = date.getUTCFullYear();
+                var month   = date.getUTCMonth() + 1;
+                var day     = date.getUTCDate();
+                var hours   = date.getUTCHours();
+                var minutes = date.getUTCMinutes();
+                var seconds = date.getUTCSeconds();
+                switch (to) {
+                    case this.JULIAN_DAY:
+                        return (1721425.5) +
+                               (365 * (year - 1)) +
+                               (floor((year - 1) / 4)) +
+                               (-floor((year - 1) / 100)) +
+                               (floor((year - 1) / 400)) +
+                               (floor((367 * month - 362) / 12)) +
+                               ((month < 3) ? 0 : (science.gregorian.isLeapYear(year) ? -1 : -2)) +
+                               day;
+                    case this.JULIAN_TIME:
+                        if(year < 1000) {
+                            year += 1900;
+                        }
+                        var uniTime = hours + (minutes / 60) + (seconds / 3600);
+                        var sign    = (100 * year + month - 190002.5 >= 0) ? 1 : -1;
+                        var part1   = 367 * year;
+                        var part2   = floor((7 * (year + floor((month + 9) / 12))) / 4);
+                        var part3   = day + floor((275 * month) / 9);
+                        var part4   = 1721013.5 + (uniTime / 24);
+                        var part5   = 0.5 * sign;
+
+                        return part1 - part2 + part3 + part4 - part5 + 0.5;
+                    case this.JULIAN_CALENDAR_DATE:
+                        var a, b, c, e;
+                        var jd = this.convert(date, this.GREGORIAN, this.JULIAN_DAY) + 0.5;
+                        a = floor(jd) + 1524;
+                        b = floor((a - 122.1) / 365.25);
+                        c = floor(365.25 * b);
+                        e = floor((a - c) / 30.6001);
+                        month = floor((e < 14) ? (e - 1) : (e - 13));
+                        year = floor((month > 2) ? (b - 4716) : (b - 4715));
+                        day = a - c - floor(30.6001 * e);
+                        if (year < 1) {
+                            year--;
+                        }
+                        return [year, month, day];
+                    case this.MODIFIED_JULIAN_DAY:
+                        return this.convert(date, this.GREGORIAN, this.JULIAN_DAY) - 2400000.5;
+                }
+                break;
+            case this.UNIX:
+                return date / 86400 + 2440587.5;
+        }
+    }
+
+};
+science.sidereal = science.sidereal || {
+
+    getMeanSiderealTime: function (date, long) {
+
+        var julianTime = science.julian.convert(date, science.julian.GREGORIAN, science.julian.JULIAN_TIME);
+
+        // Time since J2000.0
+        var normalizedJulianTime = julianTime - 2451545.0;
+        julianTime = normalizedJulianTime / 36525.0;
+        var GMST = 280.46061837 + 360.98564736629 * normalizedJulianTime;
+        var meanSiderealTime = GMST + 0.000387933 * Math.pow(julianTime, 2) - Math.pow(julianTime, 3) / 38710000 + long;
+        meanSiderealTime %= 360;
+        return meanSiderealTime;
+    }
+
+};
+science.math = science.math = {
+
+    within: function (value, low, high) {
+        if (low > high) {
+            var temp = low;
+            low = high;
+            high = low;
+        }
+        return (value >= low) && (value <= high);
+    },
+
+    interpolate: function (length, from, to) {
+        return length * (to - from);
+    },
+
+    fits: function (value, inside) {
+        if (value === 0 && inside === 0) {
+            return true;
+        }
+        if (inside === 0) {
+            return false;
+        }
+        if (value === 0) {
+            return true;
+        }
+        return (Math.abs(value) / Math.abs(inside)) > 0;
+    },
+
+    inRange: function (value, of, range) {
+        return Math.abs((Math.abs(value) - Math.abs(of))) <= Math.abs(range * of);
+    }
+
+
+};
 science.temperature = science.temperature || {
 
     CELCIUS: "celcius",
@@ -344,39 +457,6 @@ science.wind = science.wind || {
             default: throw "Unkown temperature scale.";
         }
         return null;
-    }
-
-};
-science.point = science.point || {
-
-    /**
-     * Returns the angle in radians between two points.
-     * @param  {Number} x1 Point 1 X-axis
-     * @param  {Number} y1 Point 1 Y-axis
-     * @param  {Number} x2 Point 2 X-axis
-     * @param  {Number} y2 Point 2 Y-axis
-     * @return {Number}    Angle in radians
-     */
-    angleBetweenPoints: function (x1, y1, x2, y2) {
-        return Math.atan2(y2 - y1, x2 - x1);
-    },
-
-    /**
-     * Returns true if the `x`, `y` coordinate is within the
-     * specified `polygon`.
-     * @param  {Number}  x       X-axis
-     * @param  {Number}  y       Y-axis
-     * @param  {Array}   polygon Array of coordinates as [{x, y}, {x, y}]
-     * @return {Boolean}         Inside polygon or not.
-     */
-    isInPolygon: function (x, y, polygon) {
-
-        var i, j, len = polygon.length;
-        var inside = false;
-        for (i = 0, j = len - 1; i < len; j = i++) {
-            if(((polygon[i].y > y) != (polygon[j].y > y)) && (x < (polygon[j].x-polygon[i].x) * (y-polygon[i].y) / (polygon[j].y-polygon[i].y) + polygon[i].x) ) inside = !inside;
-        }
-        return inside;
     }
 
 };
